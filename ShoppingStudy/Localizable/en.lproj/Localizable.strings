@@ -1,0 +1,159 @@
+/* 
+  Localizable.strings
+  ShoppingStudy
+
+  Created by Mustafa Gülden on 19.09.2025.
+  
+*/
+// MARK: - App General
+"app_name" = "ShoppingStudy";
+"ok" = "OK";
+"cancel" = "Cancel";
+"save" = "Save";
+"edit" = "Edit";
+"done" = "Done";
+"loading" = "Loading...";
+"error" = "Error";
+"success" = "Success";
+"yes" = "Yes";
+"no" = "No";
+"retry" = "Retry";
+"close" = "Close";
+
+// MARK: - Authentication
+"login" = "Login";
+"register" = "Register";
+"logout" = "Logout";
+"username" = "Username";
+"password" = "Password";
+"email" = "Email";
+"already_have_account" = "Already have an account?";
+"dont_have_account" = "Don't have an account?";
+
+// MARK: - Validation Messages
+"username_password_required" = "Username and password are required";
+"all_fields_required" = "All fields are required";
+"invalid_email" = "Please enter a valid email address";
+"password_too_short" = "Password must be at least 6 characters long";
+"login_failed" = "Login failed. Please check your credentials.";
+"registration_failed" = "Registration failed. Please try again.";
+"app_state_error" = "App state not configured";
+
+// MARK: - Navigation
+"products" = "Products";
+"cart" = "Cart";
+"profile" = "Profile";
+"settings" = "Settings";
+"favorites" = "Favorites";
+
+// MARK: - Product Related
+"search" = "Search";
+"categories" = "Categories";
+"all" = "All";
+"add_to_cart" = "Add to Cart";
+"quantity" = "Quantity";
+"price" = "Price";
+"total" = "Total";
+"description" = "Description";
+"rating" = "Rating";
+"original" = "Original";
+"loading_image" = "Loading image...";
+"no_products_found" = "No products found";
+"try_adjusting_search" = "Try adjusting your search or filters";
+"browse_products" = "Browse Products";
+
+// MARK: - Favorites Related
+"loading_favorites" = "Loading favorites...";
+"no_favorites" = "No Favorites";
+"add_products_to_favorites" = "Add products to your favorites to see them here";
+"remove_from_favorites" = "Remove from Favorites";
+"confirm_remove_from_favorites" = "Are you sure you want to remove this item from your favorites?";
+
+// MARK: - Cart Related
+"remove" = "Remove";
+"clear_cart" = "Clear Cart";
+"checkout" = "Checkout";
+"cart_empty" = "Your cart is empty";
+"add_products_to_cart" = "Add some products to get started";
+"unit_price" = "Unit: %@";
+"total_price" = "Total: %@";
+"one_item" = "1 item";
+"multiple_items" = "%d items";
+"confirm_remove_item" = "Are you sure you want to remove %@ from your cart?";
+"confirm_clear_cart" = "Are you sure you want to remove all items from your cart?";
+"remove_item" = "Remove Item";
+"added_to_cart" = "Added to Cart";
+"items_added_to_cart" = "%d %@ added to cart";
+
+// MARK: - Gift Related
+"gift" = "Gift";
+"send_as_gift" = "Send as Gift";
+"gift_options" = "Gift Options";
+"recipient" = "Recipient";
+"select_recipient" = "Select Recipient";
+"message" = "Message";
+"gift_message" = "Gift Message";
+"gift_message_optional" = "Gift Message (Optional)";
+"add_personal_message" = "Add a personal message...";
+"gift_message_help" = "Add a special note for the recipient (optional)";
+"loading_recipients" = "Loading recipients...";
+"no_users_available" = "No users available for gifting";
+"please_select_recipient" = "Please select a gift recipient";
+"gift_sent_successfully" = "Gift Sent Successfully!";
+"your_gift_has_been_sent_to" = "Your gift has been sent to:";
+"to_recipient" = "To: %@";
+"send_gift" = "Send Gift";
+"gift_order_failed" = "Gift order failed. Please try again.";
+"failed_load_users" = "Failed to load users. Please try again.";
+"gift_enabled" = "Gift mode enabled";
+"gift_disabled" = "Tap to send as gift";
+"change" = "Change";
+"see_all_recipients" = "See All Recipients";
+
+// MARK: - Checkout Related
+"order_summary" = "Order Summary";
+"payment_information" = "Payment Information";
+"card_number" = "Card Number";
+"mm_yy" = "MM/YY";
+"cvv" = "CVV";
+"cardholder_name" = "Cardholder Name";
+"pay_now" = "Pay Now";
+"order_completed" = "Order Completed";
+"thank_you_purchase" = "Thank you for your purchase!";
+"continue_shopping" = "Continue Shopping";
+"payment_failed" = "Payment failed. Please try again.";
+
+// MARK: - Profile Related
+"personal_info" = "Personal Information";
+"edit_profile" = "Edit Profile";
+"statistics" = "Statistics";
+"total_purchases" = "Total Purchases";
+"items_purchased" = "Items Purchased";
+"favorite_products" = "Favorite Products";
+"purchase_history" = "Purchase History";
+"orders_count" = "%d orders";
+"no_purchase_history" = "No Purchase History";
+"no_purchases_yet" = "You haven't made any purchases yet.";
+"loading_purchase_history" = "Loading purchase history...";
+"order_number" = "Order #%d";
+"product_id" = "Product ID: %d";
+"qty" = "Qty: %d";
+"statistics_updated" = "Statistics Updated";
+"recent_purchase" = "Recent Purchase";
+"just_now" = "Just now";
+
+// MARK: - Settings
+"language" = "Language";
+"currency" = "Currency";
+
+// MARK: - Network Errors
+"invalid_url" = "Invalid URL";
+"invalid_response" = "Invalid response";
+"server_error" = "Server error with code: %d";
+"request_failed" = "Request failed: %@";
+"decoding_error" = "Decoding error: %@";
+
+// MARK: - General UI
+"something_went_wrong" = "Something went wrong";
+"try_again" = "Try Again";
+"rating_with_count" = "%.1f (%d reviews)";

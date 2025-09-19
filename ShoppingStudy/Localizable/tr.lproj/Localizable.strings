@@ -1,0 +1,159 @@
+/* 
+  Localizable.strings
+  ShoppingStudy
+
+  Created by Mustafa Gülden on 19.09.2025.
+  
+*/
+// MARK: - App General
+"app_name" = "ShoppingStudy";
+"ok" = "Tamam";
+"cancel" = "İptal";
+"save" = "Kaydet";
+"edit" = "Düzenle";
+"done" = "Bitti";
+"loading" = "Yükleniyor...";
+"error" = "Hata";
+"success" = "Başarılı";
+"yes" = "Evet";
+"no" = "Hayır";
+"retry" = "Tekrar Dene";
+"close" = "Kapat";
+
+// MARK: - Authentication
+"login" = "Giriş";
+"register" = "Kayıt Ol";
+"logout" = "Çıkış";
+"username" = "Kullanıcı Adı";
+"password" = "Şifre";
+"email" = "E-posta";
+"already_have_account" = "Zaten hesabınız var mı?";
+"dont_have_account" = "Hesabınız yok mu?";
+
+// MARK: - Validation Messages
+"username_password_required" = "Kullanıcı adı ve şifre gereklidir";
+"all_fields_required" = "Tüm alanlar zorunludur";
+"invalid_email" = "Lütfen geçerli bir e-posta adresi girin";
+"password_too_short" = "Şifre en az 6 karakter olmalıdır";
+"login_failed" = "Giriş başarısız. Lütfen bilgilerinizi kontrol edin.";
+"registration_failed" = "Kayıt başarısız. Lütfen tekrar deneyin.";
+"app_state_error" = "Uygulama durumu yapılandırılmamış";
+
+// MARK: - Navigation
+"products" = "Ürünler";
+"cart" = "Sepet";
+"profile" = "Profil";
+"settings" = "Ayarlar";
+"favorites" = "Favoriler";
+
+// MARK: - Product Related
+"search" = "Ara";
+"categories" = "Kategoriler";
+"all" = "Hepsi";
+"add_to_cart" = "Sepete Ekle";
+"quantity" = "Adet";
+"price" = "Fiyat";
+"total" = "Toplam";
+"description" = "Açıklama";
+"rating" = "Değerlendirme";
+"original" = "Orijinal";
+"loading_image" = "Resim yükleniyor...";
+"no_products_found" = "Ürün bulunamadı";
+"try_adjusting_search" = "Arama veya filtrelerinizi ayarlamayı deneyin";
+"browse_products" = "Ürünlere Göz At";
+
+// MARK: - Favorites Related
+"loading_favorites" = "Favoriler yükleniyor...";
+"no_favorites" = "Favori Yok";
+"add_products_to_favorites" = "Burada görüntülemek için ürünleri favorilerinize ekleyin";
+"remove_from_favorites" = "Favorilerden Kaldır";
+"confirm_remove_from_favorites" = "Bu ürünü favorilerinizden kaldırmak istediğinizden emin misiniz?";
+
+// MARK: - Cart Related
+"remove" = "Kaldır";
+"clear_cart" = "Sepeti Temizle";
+"checkout" = "Ödeme";
+"cart_empty" = "Sepetiniz boş";
+"add_products_to_cart" = "Başlamak için bazı ürünler ekleyin";
+"unit_price" = "Birim: %@";
+"total_price" = "Toplam: %@";
+"one_item" = "1 ürün";
+"multiple_items" = "%d ürün";
+"confirm_remove_item" = "%@ ürününü sepetinizden kaldırmak istediğinizden emin misiniz?";
+"confirm_clear_cart" = "Sepetinizdeki tüm ürünleri kaldırmak istediğinizden emin misiniz?";
+"remove_item" = "Ürünü Kaldır";
+"added_to_cart" = "Sepete Eklendi";
+"items_added_to_cart" = "%d %@ sepete eklendi";
+
+// MARK: - Gift Related
+"gift" = "Hediye";
+"send_as_gift" = "Hediye Olarak Gönder";
+"gift_options" = "Hediye Seçenekleri";
+"recipient" = "Alıcı";
+"select_recipient" = "Alıcı Seç";
+"message" = "Mesaj";
+"gift_message" = "Hediye Mesajı";
+"gift_message_optional" = "Hediye Mesajı (İsteğe Bağlı)";
+"add_personal_message" = "Kişisel bir mesaj ekleyin...";
+"gift_message_help" = "Alıcı için özel bir not ekleyin (isteğe bağlı)";
+"loading_recipients" = "Alıcılar yükleniyor...";
+"no_users_available" = "Hediye göndermek için kullanıcı bulunmuyor";
+"please_select_recipient" = "Lütfen bir hediye alıcısı seçin";
+"gift_sent_successfully" = "Hediye Başarıyla Gönderildi!";
+"your_gift_has_been_sent_to" = "Hediyeniz şu kişiye gönderildi:";
+"to_recipient" = "Kime: %@";
+"send_gift" = "Hediye Gönder";
+"gift_order_failed" = "Hediye siparişi başarısız. Lütfen tekrar deneyin.";
+"failed_load_users" = "Kullanıcılar yüklenemedi. Lütfen tekrar deneyin.";
+"gift_enabled" = "Hediye modu etkin";
+"gift_disabled" = "Hediye olarak göndermek için dokunun";
+"change" = "Değiştir";
+"see_all_recipients" = "Tüm Alıcıları Gör";
+
+// MARK: - Checkout Related
+"order_summary" = "Sipariş Özeti";
+"payment_information" = "Ödeme Bilgileri";
+"card_number" = "Kart Numarası";
+"mm_yy" = "AA/YY";
+"cvv" = "CVV";
+"cardholder_name" = "Kart Sahibinin Adı";
+"pay_now" = "Şimdi Öde";
+"order_completed" = "Sipariş Tamamlandı";
+"thank_you_purchase" = "Satın alımınız için teşekkür ederiz!";
+"continue_shopping" = "Alışverişe Devam Et";
+"payment_failed" = "Ödeme başarısız. Lütfen tekrar deneyin.";
+
+// MARK: - Profile Related
+"personal_info" = "Kişisel Bilgiler";
+"edit_profile" = "Profili Düzenle";
+"statistics" = "İstatistikler";
+"total_purchases" = "Toplam Satın Alma";
+"items_purchased" = "Satın Alınan Ürünler";
+"favorite_products" = "Favori Ürünler";
+"purchase_history" = "Satın Alma Geçmişi";
+"orders_count" = "%d sipariş";
+"no_purchase_history" = "Satın Alma Geçmişi Yok";
+"no_purchases_yet" = "Henüz hiç satın alma işleminiz bulunmuyor.";
+"loading_purchase_history" = "Satın alma geçmişi yükleniyor...";
+"order_number" = "Sipariş #%d";
+"product_id" = "Ürün ID: %d";
+"qty" = "Adet: %d";
+"statistics_updated" = "İstatistikler Güncellendi";
+"recent_purchase" = "Son Satın Alma";
+"just_now" = "Az önce";
+
+// MARK: - Settings
+"language" = "Dil";
+"currency" = "Para Birimi";
+
+// MARK: - Network Errors
+"invalid_url" = "Geçersiz URL";
+"invalid_response" = "Geçersiz yanıt";
+"server_error" = "Sunucu hatası: %d";
+"request_failed" = "İstek başarısız: %@";
+"decoding_error" = "Çözümleme hatası: %@";
+
+// MARK: - General UI
+"something_went_wrong" = "Bir şeyler yanlış gitti";
+"try_again" = "Tekrar Dene";
+"rating_with_count" = "%.1f (%d değerlendirme)";
