@@ -12,7 +12,6 @@ protocol CurrencyServiceProtocol {
     func convertPrice(_ price: Double, from: String, to: String, rates: [String: Double]) -> Double
 }
 
-
 final class CurrencyService: CurrencyServiceProtocol {
     private let networkManager: NetworkManager
     private var cachedRates: [String: Double] = [:]
@@ -23,7 +22,6 @@ final class CurrencyService: CurrencyServiceProtocol {
     }
     
     func getExchangeRates(for baseCurrency: String) async throws -> [String: Double] {
-        // Cache rates for 1 hour
         if let lastFetch = lastFetchTime,
            Date().timeIntervalSince(lastFetch) < 3600,
            !cachedRates.isEmpty {
@@ -39,6 +37,7 @@ final class CurrencyService: CurrencyServiceProtocol {
         return cachedRates
     }
     
+    // BURADA Currency Enumı kullan.
     func convertPrice(_ price: Double, from: String, to: String, rates: [String: Double]) -> Double {
         if from == to { return price }
         

@@ -16,7 +16,7 @@ struct LoginAPIRequest: APIRequest {
     let body: Data?
     
     init(username: String, password: String) throws {
-        let loginRequest = LoginRequest(username: username, password: password)
+        let loginRequest = LoginRequestParameters(username: username, password: password)
         self.body = try JSONEncoder().encode(loginRequest)
     }
 }

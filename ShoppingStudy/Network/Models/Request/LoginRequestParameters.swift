@@ -1,5 +1,5 @@
 //
-//  LoginRequest.swift
+//  LoginRequestParameters.swift
 //  ShoppingSpree
 //
 //  Created by Mustafa Gülden on 18.09.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LoginRequest: Codable {
+struct LoginRequestParameters: Encodable {
     let username: String
     let password: String
 }

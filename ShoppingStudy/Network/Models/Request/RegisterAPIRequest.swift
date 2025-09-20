@@ -14,7 +14,7 @@ struct RegisterAPIRequest: APIRequest {
     let method: HTTPMethod = .post
     let body: Data?
     
-    init<T: Codable>(request: T) throws {
-        self.body = try JSONEncoder().encode(request)
+    init(parameters: RegisterRequestParameters) throws {
+        self.body = try JSONEncoder().encode(parameters)
     }
 }

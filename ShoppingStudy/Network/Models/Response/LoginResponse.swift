@@ -5,6 +5,6 @@
 //  Created by Mustafa Gülden on 18.09.2025.
 //
 
-struct LoginResponse: Codable {
+struct LoginResponse: Decodable {
     let token: String
 }

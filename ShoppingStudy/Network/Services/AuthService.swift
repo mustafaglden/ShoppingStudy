@@ -9,10 +9,10 @@ import Foundation
 
 protocol AuthServiceProtocol {
     func login(username: String, password: String) async throws -> User
-    func register(request: RegisterRequest) async throws -> User
+    func register(parameters: RegisterRequestParameters) async throws -> User
 }
 
-class AuthService: AuthServiceProtocol {
+final class AuthService: AuthServiceProtocol {
     private let networkManager: NetworkManager
     
     init(networkManager: NetworkManager = NetworkService.shared) {
@@ -31,14 +31,14 @@ class AuthService: AuthServiceProtocol {
         )
     }
     
-    func register(request: RegisterRequest) async throws -> User {
-        let registerAPIRequest = try RegisterAPIRequest(request: request)
+    func register(parameters: RegisterRequestParameters) async throws -> User {
+        let registerAPIRequest = try RegisterAPIRequest(parameters: parameters)
         let created = try await networkManager.makeRequest(registerAPIRequest)
 
         return User(
             id: created.id ?? 0,
-            email: created.email ?? request.email,
-            username: created.username ?? request.username,
+            email: created.email ?? parameters.email,
+            username: created.username ?? parameters.username,
             password: nil
         )
     }
