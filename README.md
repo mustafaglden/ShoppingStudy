@@ -126,20 +126,6 @@ User data is stored locally using UserDefaults with Codable models:
 - Purchase history
 - App preferences
 
-## Deployment
-
-### Building for Release
-
-1. Select "Any iOS Device" as the build target
-2. Product → Archive
-3. Distribute App → Ad Hoc or App Store
-4. Follow the distribution wizard
-
-### Requirements
-- Valid Apple Developer account
-- Provisioning profiles configured
-- App Store Connect app created (for App Store distribution)
-
 ## Code Style
 
 The project follows Swift best practices:
