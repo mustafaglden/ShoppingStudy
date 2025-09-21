@@ -5,6 +5,7 @@
 //  Created by Mustafa Gülden on 20.09.2025.
 //
 
+// ProfileView.swift - Updated with proper date formatting and statistics
 import SwiftUI
 
 struct ProfileView: View {
@@ -20,13 +21,13 @@ struct ProfileView: View {
                 // User Header
                 userHeaderSection
                 
-                // Statistics (from AppState only)
+                // Statistics with API data integration
                 statisticsSection
                 
                 // Quick Actions
                 quickActionsSection
                 
-                // Purchase History (from API)
+                // Purchase History
                 purchaseHistorySection
                 
                 // Logout Button
@@ -58,7 +59,7 @@ struct ProfileView: View {
                 appState.logout()
             }
         } message: {
-            Text("Are you sure you want to logout?")
+            Text("logout_confirmation".localized())
         }
         .task {
             if let userId = appState.currentUser?.id {
@@ -108,23 +109,23 @@ struct ProfileView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 12) {
-                // Total amount spent (from local AppState)
+                // Total amount from both local purchases AND API carts
                 StatCard(
                     title: "total_purchases".localized(),
-                    value: appState.formatPrice(appState.currentUser?.totalPurchases ?? 0),
+                    value: appState.formatPrice(calculateTotalPurchases()),
                     icon: "cart.fill",
                     color: .blue
                 )
                 
-                // API carts count
+                // Orders count from API
                 StatCard(
-                    title: "Orders",
+                    title: "orders".localized(),
                     value: "\(viewModel.userCarts.count)",
                     icon: "doc.text.fill",
                     color: .green
                 )
                 
-                // Favorite products count (from local AppState)
+                // Favorite products count
                 StatCard(
                     title: "favorite_products".localized(),
                     value: "\(appState.favoriteProductIds.count)",
@@ -132,13 +133,31 @@ struct ProfileView: View {
                     color: .red
                 )
                 
-                // Gifts sent count (from local AppState)
+                // Combined gifts sent and received
                 StatCard(
-                    title: "Gifts Sent",
+                    title: "gifts_sent".localized(),
                     value: "\(appState.currentUser?.giftsSent.count ?? 0)",
                     icon: "gift.fill",
                     color: .purple
                 )
+            }
+            
+            // Add received gifts if any
+            if let receivedCount = appState.currentUser?.giftsReceived.count, receivedCount > 0 {
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 12) {
+                    StatCard(
+                        title: "gifts_received".localized(),
+                        value: "\(receivedCount)",
+                        icon: "gift.fill",
+                        color: .orange
+                    )
+                    
+                    Color.clear
+                        .frame(height: 1)
+                }
             }
         }
     }
@@ -146,23 +165,37 @@ struct ProfileView: View {
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                QuickActionButton(
+                AppSettingStatCard(
                     title: "language".localized(),
                     subtitle: appState.currentLanguage.displayName,
                     icon: "globe",
                     color: .blue
-                ) {
-                    showingSettings = true
-                }
+                )
                 
-                QuickActionButton(
+                AppSettingStatCard(
                     title: "currency".localized(),
                     subtitle: appState.currentCurrency.displayName,
                     icon: "dollarsign.circle",
                     color: .green
-                ) {
-                    showingSettings = true
-                }
+                )
+                
+//                QuickActionButton(
+//                    title: "language".localized(),
+//                    subtitle: appState.currentLanguage.displayName,
+//                    icon: "globe",
+//                    color: .blue
+//                ) {
+//                    showingSettings = true
+//                }
+//                
+//                QuickActionButton(
+//                    title: "currency".localized(),
+//                    subtitle: appState.currentCurrency.displayName,
+//                    icon: "dollarsign.circle",
+//                    color: .green
+//                ) {
+//                    showingSettings = true
+//                }
             }
         }
     }
@@ -224,7 +257,7 @@ struct ProfileView: View {
                         // Could navigate to full history view
                     }) {
                         HStack {
-                            Text("View all \(viewModel.userCarts.count) orders")
+                            Text("view_all_orders".localized(with: viewModel.userCarts.count))
                                 .font(.caption)
                             Image(systemName: "chevron.right")
                                 .font(.caption)
@@ -252,5 +285,17 @@ struct ProfileView: View {
             .cornerRadius(10)
         }
         .padding(.top)
+    }
+    
+    // Helper function to calculate total purchases from API carts
+    private func calculateTotalPurchases() -> Double {
+        var total = appState.currentUser?.totalPurchases ?? 0
+        
+        // Add API cart totals if not already included
+        for cart in viewModel.userCarts {
+            total += viewModel.calculateCartTotal(cart: cart)
+        }
+        
+        return total
     }
 }

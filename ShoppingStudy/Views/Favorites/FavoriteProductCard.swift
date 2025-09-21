@@ -16,29 +16,30 @@ struct FavoriteProductCard: View {
     @State private var showingAddedToCart = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Product Image
+        VStack(spacing: 0) {
             ZStack(alignment: .topTrailing) {
                 AsyncImage(url: URL(string: product.image)) { phase in
                     switch phase {
                     case .empty:
                         ProgressView()
-                            .frame(height: 150)
                             .frame(maxWidth: .infinity)
+                            .frame(height: 150)
                     case .success(let image):
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(height: 150)
                             .frame(maxWidth: .infinity)
+                            .frame(height: 150)
+                            .clipped()
                     case .failure(_):
                         Image(systemName: "photo")
                             .font(.largeTitle)
                             .foregroundColor(.gray)
-                            .frame(height: 150)
                             .frame(maxWidth: .infinity)
+                            .frame(height: 150)
                     @unknown default:
                         EmptyView()
+                            .frame(height: 150)
                     }
                 }
                 .background(Color.gray.opacity(0.1))
@@ -57,12 +58,13 @@ struct FavoriteProductCard: View {
                 .padding(8)
             }
             
-            // Product Info
+            // Product Info - Fixed layout
             VStack(alignment: .leading, spacing: 4) {
                 Text(product.title)
                     .font(.caption)
                     .lineLimit(2)
                     .foregroundColor(.primary)
+                    .frame(minHeight: 30, alignment: .topLeading)
                 
                 // Rating
                 HStack(spacing: 2) {
@@ -78,6 +80,7 @@ struct FavoriteProductCard: View {
                 Text(appState.formatPrice(product.price))
                     .font(.headline)
                     .foregroundColor(.blue)
+                    .padding(.vertical, 2)
                 
                 // Add to Cart Button
                 Button(action: {
@@ -91,8 +94,10 @@ struct FavoriteProductCard: View {
                 }) {
                     HStack {
                         Image(systemName: showingAddedToCart ? "checkmark" : "cart.badge.plus")
+                            .font(.caption2)
                         Text(showingAddedToCart ? "added_to_cart".localized() : "add_to_cart".localized())
                             .font(.caption)
+                            .lineLimit(1)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
@@ -104,6 +109,7 @@ struct FavoriteProductCard: View {
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
+            .padding(.top, 4)
         }
         .background(Color.white)
         .cornerRadius(12)

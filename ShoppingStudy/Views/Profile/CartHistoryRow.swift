@@ -31,14 +31,14 @@ struct CartHistoryRow: View {
                     .fontWeight(.medium)
                 
                 HStack {
-                    Text("\(cart.products.count) items")
+                    Text(itemCountText)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
                     Text("•")
                         .foregroundColor(.secondary)
                     
-                    Text(viewModel.formatCartDate(cart.date))
+                    Text(formattedDate)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -55,5 +55,48 @@ struct CartHistoryRow: View {
         .padding()
         .background(Color(.secondarySystemBackground))
         .cornerRadius(10)
+    }
+    
+    private var itemCountText: String {
+        let count = cart.products.count
+        if count == 1 {
+            return "one_item".localized()
+        } else {
+            return "multiple_items".localized(with: count)
+        }
+    }
+    
+    private var formattedDate: String {
+        // Parse the date string
+        guard let date = ISO8601DateFormatter().date(from: cart.date) else {
+            // If can't parse, try without milliseconds
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+            formatter.timeZone = TimeZone(identifier: "UTC")
+            
+            if let fallbackDate = formatter.date(from: cart.date) {
+                return formatDate(fallbackDate)
+            }
+            return cart.date
+        }
+        return formatDate(date)
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        
+        let relativeDate = formatter.localizedString(for: date, relativeTo: Date())
+        
+        // If it's very old (like 2020), show the actual date
+        let calendar = Calendar.current
+        if let years = calendar.dateComponents([.year], from: date, to: Date()).year, years >= 2 {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+            return dateFormatter.string(from: date)
+        }
+        
+        return relativeDate
     }
 }

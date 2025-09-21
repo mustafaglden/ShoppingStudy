@@ -17,7 +17,6 @@ final class ProfileViewModel: ObservableObject {
     
     private let cartService: CartServiceProtocol
     private let productService: ProductServiceProtocol
-    private let logger = DebugLogger.shared
     
     init(cartService: CartServiceProtocol = CartService(),
          productService: ProductServiceProtocol = ProductService()) {

@@ -122,6 +122,7 @@
 "thank_you_purchase" = "Satın alımınız için teşekkür ederiz!";
 "continue_shopping" = "Alışverişe Devam Et";
 "payment_failed" = "Ödeme başarısız. Lütfen tekrar deneyin.";
+"order_completed" = "Siparişiniz verildi.";
 
 // MARK: - Profile Related
 "personal_info" = "Kişisel Bilgiler";
@@ -141,6 +142,8 @@
 "statistics_updated" = "İstatistikler Güncellendi";
 "recent_purchase" = "Son Satın Alma";
 "just_now" = "Az önce";
+"gifts_received" = "Alınan Hediyeler";
+"logout_confirmation" = "Çıkış yapmak istediğinizden emin misiniz?";
 
 // MARK: - Settings
 "language" = "Dil";

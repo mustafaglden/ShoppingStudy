@@ -19,9 +19,9 @@ struct GiftRecipientSelectorView: View {
     @EnvironmentObject var appState: AppState
     
     private let userService = UserService()
-    private let logger = DebugLogger.shared
     
     private var filteredUsers: [User] {
+        // Filter out the current user
         let otherUsers = availableUsers.filter { $0.id != appState.currentUser?.id }
         
         if searchText.isEmpty {
@@ -42,7 +42,7 @@ struct GiftRecipientSelectorView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if filteredUsers.isEmpty && !searchText.isEmpty {
                     noSearchResultsView
-                } else if availableUsers.isEmpty {
+                } else if filteredUsers.isEmpty {
                     emptyStateView
                 } else {
                     recipientsList
@@ -65,7 +65,7 @@ struct GiftRecipientSelectorView: View {
                     .disabled(selectedRecipient == nil)
                 }
             }
-            .searchable(text: $searchText, prompt: "Search users")
+            .searchable(text: $searchText, prompt: "search_users".localized())
             .task {
                 await loadUsersFromAPI()
             }
@@ -115,7 +115,7 @@ struct GiftRecipientSelectorView: View {
             ScrollView {
                 VStack(spacing: 8) {
                     if filteredUsers.isEmpty {
-                        Text("No matching users")
+                        Text("no_users_found".localized())
                             .foregroundColor(.secondary)
                             .padding(.vertical, 40)
                     } else {
@@ -150,7 +150,7 @@ struct GiftRecipientSelectorView: View {
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            Text("Try again later")
+            Text("try_again_later".localized())
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
@@ -179,11 +179,11 @@ struct GiftRecipientSelectorView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             
-            Text("No users found")
+            Text("no_users_found".localized())
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            Text("Try a different search term")
+            Text("try_different_search".localized())
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -194,12 +194,14 @@ struct GiftRecipientSelectorView: View {
     private func loadUsersFromAPI() async {
         isLoading = true
         errorMessage = nil
+        
         do {
             // Fetch users from the API
             let users = try await userService.fetchAllUsers()
             
             await MainActor.run {
-                self.availableUsers = users
+                // Filter out current user from the list
+                self.availableUsers = users.filter { $0.id != appState.currentUser?.id }
                 self.isLoading = false
             }
             

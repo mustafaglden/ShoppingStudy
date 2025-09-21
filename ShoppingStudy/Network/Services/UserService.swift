@@ -14,7 +14,6 @@ protocol UserServiceProtocol {
 
 final class UserService: UserServiceProtocol {
     private let networkManager: NetworkManager
-    private let logger = DebugLogger.shared
     
     init(networkManager: NetworkManager = NetworkService.shared) {
         self.networkManager = networkManager

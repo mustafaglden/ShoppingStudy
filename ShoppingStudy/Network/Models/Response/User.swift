@@ -16,7 +16,6 @@ struct User: Codable, Identifiable, Equatable {
         return username
     }
     
-    // MARK: - Equatable
     static func == (lhs: User, rhs: User) -> Bool {
         return lhs.id == rhs.id &&
                lhs.email == rhs.email &&

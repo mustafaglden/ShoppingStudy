@@ -23,7 +23,6 @@ final class ProductListViewModel: ObservableObject {
     private let productService: ProductServiceProtocol
     private let persistenceManager = UserPersistenceManager.shared
     private var cancellables = Set<AnyCancellable>()
-    private let logger = DebugLogger.shared
     
     init(productService: ProductServiceProtocol = ProductService()) {
         self.productService = productService
