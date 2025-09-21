@@ -153,6 +153,3 @@ The project follows Swift best practices:
 
 - [Fake Store API](https://fakestoreapi.com) for providing the product data
 - [Exchange Rate API](https://exchangerate-api.com) for currency conversion rates
----
-
-**Note**: This is a demonstration project showcasing iOS development skills including SwiftUI, MVVM architecture, networking, local persistence, and internationalization.
