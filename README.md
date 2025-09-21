@@ -77,6 +77,10 @@ No additional API key configuration is required as the keys are included.
 - **Settings**: Language and currency preferences
 - **Purchase History**: View past orders
 
+## Limitations
+
+Even though the Fake Store API returns a success response when registering a new user, the registration is not actually persisted. Users can only log in with the pre-defined accounts available in the API’s login dataset. This is a limitation of the Fake Store API, not the application.
+
 ## Localization
 
 The app supports two languages:
