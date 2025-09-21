@@ -157,3 +157,32 @@
 "something_went_wrong" = "Something went wrong";
 "try_again" = "Try Again";
 "rating_with_count" = "%.1f (%d reviews)";
+
+// MARK: -  Product Detail
+"product_details" = "Product Details";
+"add_to_favorites" = "Add to Favorites";
+
+// MARK: - Cart & Orders
+"order_details" = "Order Details";
+"items" = "Items";
+"processing_payment" = "Processing payment...";
+"orders" = "Orders";
+"gifts_sent" = "Gifts Sent";
+"view_all_orders" = "View all %d orders";
+
+// MARK: - Profile
+"logout_confirmation" = "Are you sure you want to logout?";
+
+// MARK: - Selection
+"search_users" = "Search users";
+"try_again_later" = "Try again later";
+"no_users_found" = "No users found";
+"try_different_search" = "Try a different search term";
+
+// MARK: - Product List
+"sort_by" = "Sort by:";
+"price_low_to_high" = "Price: Low to High";
+"price_high_to_low" = "Price: High to Low";
+"rating_high_to_low" = "Rating: High to Low";
+"clear_search" = "Clear search";
+

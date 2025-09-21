@@ -157,3 +157,31 @@
 "something_went_wrong" = "Bir şeyler yanlış gitti";
 "try_again" = "Tekrar Dene";
 "rating_with_count" = "%.1f (%d değerlendirme)";
+
+// MARK: - Product Detail
+"product_details" = "Ürün Detayları";
+"add_to_favorites" = "Favorilere Ekle";
+
+// MARK: - Cart & Orders
+"order_details" = "Sipariş Detayları";
+"items" = "Ürünler";
+"processing_payment" = "Ödeme işleniyor...";
+"orders" = "Siparişler";
+"gifts_sent" = "Gönderilen Hediyeler";
+"view_all_orders" = "Tüm %d siparişi görüntüle";
+
+// MARK: - Profile
+"logout_confirmation" = "Çıkış yapmak istediğinizden emin misiniz?";
+
+// MARK: - Gift Selection
+"search_users" = "Kullanıcı ara";
+"try_again_later" = "Daha sonra tekrar deneyin";
+"no_users_found" = "Kullanıcı bulunamadı";
+"try_different_search" = "Farklı bir arama terimi deneyin";
+
+// MARK: - Product List
+"sort_by" = "Sırala:";
+"price_low_to_high" = "Fiyat: Düşükten Yükseğe";
+"price_high_to_low" = "Fiyat: Yüksekten Düşüğe";
+"rating_high_to_low" = "Puan: Yüksekten Düşüğe";
+"clear_search" = "Aramayı temizle";

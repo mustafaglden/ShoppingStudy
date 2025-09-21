@@ -5,9 +5,7 @@
 //  Created by Mustafa Gülden on 18.09.2025.
 //
 
-
 import Foundation
-
 
 final class NetworkService: NetworkManager {
     static let shared = NetworkService()

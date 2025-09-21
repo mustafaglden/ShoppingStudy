@@ -36,13 +36,13 @@ enum APIEndpoints {
             return "\(APIEndpoints.baseURL)/products/category/\(category)"
         case .login:
             return "\(APIEndpoints.baseURL)/auth/login"
-        case .users: // Will be shown in gift view.
+        case .users:
             return "\(APIEndpoints.baseURL)/users"
-        case .user(let id): // Will be shown in profile.
+        case .user(let id): 
             return "\(APIEndpoints.baseURL)/users/\(id)"
-        case .carts: // Will be shown in profile view.
+        case .carts:
             return "\(APIEndpoints.baseURL)/carts"
-        case .cart(let id): // Will be shown in 
+        case .cart(let id):
             return "\(APIEndpoints.baseURL)/carts/\(id)"
         case .userCarts(let userId):
             return "\(APIEndpoints.baseURL)/carts/user/\(userId)"

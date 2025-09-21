@@ -6,14 +6,17 @@
 //
 
 import SwiftUI
+import Combine
 
 final class LocalizationManager: ObservableObject {
     @Published var currentLanguage: Language = .english
+    @Published var bundle: Bundle = .main
     
     static let shared = LocalizationManager()
     
     private init() {
         loadSavedLanguage()
+        updateBundle()
     }
     
     func setLanguage(_ language: Language) {
@@ -21,10 +24,22 @@ final class LocalizationManager: ObservableObject {
         UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
         
+        updateBundle()
+        
+        // Force UI update
         NotificationCenter.default.post(
             name: Notification.Name("LanguageDidChange"),
             object: nil
         )
+    }
+    
+    private func updateBundle() {
+        guard let path = Bundle.main.path(forResource: currentLanguage.rawValue, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            self.bundle = Bundle.main
+            return
+        }
+        self.bundle = bundle
     }
     
     private func loadSavedLanguage() {
@@ -35,6 +50,15 @@ final class LocalizationManager: ObservableObject {
             } else {
                 currentLanguage = .english
             }
+        } else {
+            // Default to device language or English
+            if let preferredLanguage = Locale.current.language.languageCode?.identifier {
+                currentLanguage = preferredLanguage.hasPrefix("tr") ? .turkish : .english
+            }
         }
+    }
+    
+    func localizedString(_ key: String) -> String {
+        return NSLocalizedString(key, bundle: bundle, comment: "")
     }
 }

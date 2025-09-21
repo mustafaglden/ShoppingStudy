@@ -8,17 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appState = AppState()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        RootView()
+            .environmentObject(appState)
+            .environment(\.locale, Locale(identifier: appState.currentLanguage.rawValue))
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("LanguageDidChange"))) { _ in
+                appState.objectWillChange.send()
+            }
     }
-}
-
-#Preview {
-    ContentView()
 }

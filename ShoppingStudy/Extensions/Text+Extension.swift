@@ -10,11 +10,13 @@ import SwiftUI
 // SwiftUI Text extension for localization
 extension Text {
     init(localizedKey: String) {
-        self.init(NSLocalizedString(localizedKey, comment: ""))
+        let localizedString = LocalizationManager.shared.localizedString(localizedKey)
+        self.init(localizedString)
     }
     
     init(localizedKey: String, arguments: CVarArg...) {
-        let format = NSLocalizedString(localizedKey, comment: "")
-        self.init(String(format: format, arguments: arguments))
+        let format = LocalizationManager.shared.localizedString(localizedKey)
+        let localizedString = String(format: format, arguments: arguments)
+        self.init(localizedString)
     }
 }
