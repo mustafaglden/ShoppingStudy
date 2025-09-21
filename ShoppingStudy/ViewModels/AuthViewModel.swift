@@ -17,44 +17,59 @@ final class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showingError = false
     @Published var selectedLanguage: Language = .english
+    @Published var showingRegister = false
     
     private let authService: AuthServiceProtocol
-    private let persistenceManager = UserPersistenceManager.shared
+    private let persistenceManager: UserPersistenceManagerProtocol
+    private let localizationManager: LocalizationManagerProtocol
     private var cancellables = Set<AnyCancellable>()
     
-    init(authService: AuthServiceProtocol = AuthService()) {
+    init(authService: AuthServiceProtocol = AuthService(),
+         persistenceManager: UserPersistenceManagerProtocol = UserPersistenceManager.shared,
+         localizationManager: LocalizationManagerProtocol = LocalizationManager.shared) {
         self.authService = authService
+        self.persistenceManager = persistenceManager
+        self.localizationManager = localizationManager
         loadSavedLanguage()
     }
     
     private func loadSavedLanguage() {
-        if let languageCodes = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
-           let firstLanguage = languageCodes.first {
-            if firstLanguage.hasPrefix("tr") {
-                selectedLanguage = .turkish
-            } else {
-                selectedLanguage = .english
-            }
-        }
+        selectedLanguage = localizationManager.currentLanguage
     }
     
-    func login(appState: AppState) async {
+    func updateLanguage(_ language: Language, appState: AppStateProtocol) {
+        selectedLanguage = language
+        localizationManager.setLanguage(language)
+        appState.currentLanguage = language
+    }
+    
+    func showRegisterView() {
+        showingRegister = true
+    }
+    
+    func dismissRegisterView() {
+        showingRegister = false
+    }
+    
+    func dismissError() {
+        showingError = false
+        errorMessage = nil
+    }
+    
+    func login(appState: AppStateProtocol) async {
         guard validateLoginFields() else { return }
         
         isLoading = true
         errorMessage = nil
         
         do {
-            // Try API login
             _ = try await authService.login(username: username, password: password)
             
-            // Check if user exists locally
             if let existingUser = persistenceManager.getUser(by: username, password: password) {
                 await MainActor.run {
                     appState.login(user: existingUser)
                 }
             } else {
-                // Create new local user profile
                 let newUser = persistenceManager.createUser(username: username, email: "\(username)@example.com")
                 await MainActor.run {
                     appState.login(user: newUser)
@@ -72,7 +87,7 @@ final class AuthViewModel: ObservableObject {
         isLoading = false
     }
     
-    func register(appState: AppState) async {
+    func register(appState: AppStateProtocol) async {
         guard validateRegistrationFields() else { return }
         
         isLoading = true
@@ -85,14 +100,13 @@ final class AuthViewModel: ObservableObject {
                 password: password
             )
             
-            // Try API registration
             _ = try await authService.register(parameters: parameters)
             
-            // Create local user profile
             let newUser = persistenceManager.createUser(username: username, email: email)
             
             await MainActor.run {
                 appState.login(user: newUser)
+                self.dismissRegisterView()
             }
             
             clearFields()
@@ -104,18 +118,6 @@ final class AuthViewModel: ObservableObject {
         }
         
         isLoading = false
-    }
-    
-    func updateLanguage(_ language: Language, appState: AppState) {
-        selectedLanguage = language
-        appState.currentLanguage = language
-        UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
-        
-        // Post notification for language change
-        NotificationCenter.default.post(
-            name: Notification.Name("LanguageDidChange"),
-            object: nil
-        )
     }
     
     private func validateLoginFields() -> Bool {

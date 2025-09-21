@@ -7,21 +7,6 @@
 
 import SwiftUI
 
-//struct RootView: View {
-//    @EnvironmentObject var appState: AppState
-//    
-//    var body: some View {
-//        if appState.isAuthenticated {
-//            MainTabView()
-//        } else {
-//            NavigationStack {
-//                LoginView()
-//            }
-//        }
-//    }
-//}
-
-// Updated RootView
 struct RootView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var localizationManager: LocalizationManager
@@ -31,17 +16,16 @@ struct RootView: View {
         Group {
             if appState.isAuthenticated {
                 MainTabView()
-                    .id(refreshID) // Force refresh on language change
+                    .id(refreshID)
             } else {
                 NavigationStack {
                     LoginView()
                 }
-                .id(refreshID) // Force refresh on language change
+                .id(refreshID)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("LanguageDidChange"))) { _ in
-            refreshID = UUID() // Force complete view refresh
+            refreshID = UUID()
         }
     }
 }
-

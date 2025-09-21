@@ -10,8 +10,6 @@ import SwiftUI
 struct ProductListView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = ProductListViewModel()
-    @State private var selectedProduct: Product?
-    @State private var showingProductDetail = false
     
     var body: some View {
         ZStack {
@@ -38,9 +36,12 @@ struct ProductListView: View {
         .refreshable {
             await viewModel.refreshProducts()
         }
-        .sheet(item: $selectedProduct) { product in
+        .sheet(item: $viewModel.selectedProduct) { product in
             ProductDetailView(product: product)
                 .environmentObject(appState)
+                .onDisappear {
+                    viewModel.dismissProductDetail()
+                }
         }
         .alert("error".localized(), isPresented: $viewModel.showingError) {
             Button("ok".localized()) {}
@@ -52,43 +53,9 @@ struct ProductListView: View {
     private var productListContent: some View {
         ScrollView {
             VStack(spacing: 15) {
-                // Category Filter
                 categoryPicker
-                
-                // Sort Options
                 sortPicker
-                
-                // Products Grid
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 15) {
-                    ForEach(viewModel.filteredProducts) { product in
-                        ProductCardView(
-                            product: product,
-                            isFavorite: appState.favoriteProductIds.contains(product.id)
-                        ) {
-                            // Add to cart action
-                            viewModel.addToCart(
-                                product: product,
-                                quantity: 1,
-                                userId: appState.currentUser?.id ?? 0,
-                                appState: appState
-                            )
-                        } onFavorite: {
-                            // Toggle favorite action
-                            viewModel.toggleFavorite(
-                                productId: product.id,
-                                userId: appState.currentUser?.id ?? 0,
-                                appState: appState
-                            )
-                        }
-                        .onTapGesture {
-                            selectedProduct = product
-                        }
-                    }
-                }
-                .padding(.horizontal)
+                productsGrid
             }
             .padding(.vertical)
         }
@@ -102,11 +69,8 @@ struct ProductListView: View {
                         title: category == "all" ? "all".localized() : category.capitalized,
                         isSelected: viewModel.selectedCategory == category
                     ) {
-                        withAnimation {
-                            viewModel.selectedCategory = category
-                        }
-                        Task(priority: .userInitiated) {
-                            await viewModel.loadProductsByCategory(category)
+                        Task {
+                            await viewModel.selectCategory(category)
                         }
                     }
                 }
@@ -117,15 +81,15 @@ struct ProductListView: View {
     
     private var sortPicker: some View {
         HStack {
-            Text("Sort by:")
+            Text("sort_by".localized())
                 .font(.caption)
                 .foregroundColor(.secondary)
             
             Picker("", selection: $viewModel.sortOption) {
                 Text("original".localized()).tag(SortOption.none)
-                Text("Price: Low to High").tag(SortOption.priceAsc)
-                Text("Price: High to Low").tag(SortOption.priceDesc)
-                Text("Rating: High to Low").tag(SortOption.rating)
+                Text("price_low_to_high".localized()).tag(SortOption.priceAsc)
+                Text("price_high_to_low".localized()).tag(SortOption.priceDesc)
+                Text("rating_high_to_low".localized()).tag(SortOption.rating)
             }
             .pickerStyle(MenuPickerStyle())
             .accentColor(.blue)
@@ -134,15 +98,46 @@ struct ProductListView: View {
             
             if !viewModel.searchText.isEmpty {
                 Button(action: {
-                    viewModel.searchText = ""
+                    viewModel.clearSearch()
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.caption)
-                        Text("Clear search")
+                        Text("clear_search".localized())
                             .font(.caption)
                     }
                     .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var productsGrid: some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 15) {
+            ForEach(viewModel.filteredProducts) { product in
+                ProductCardView(
+                    product: product,
+                    isFavorite: appState.favoriteProductIds.contains(product.id)
+                ) {
+                    viewModel.addToCart(
+                        product: product,
+                        quantity: 1,
+                        userId: appState.currentUser?.id ?? 0,
+                        appState: appState
+                    )
+                } onFavorite: {
+                    viewModel.toggleFavorite(
+                        productId: product.id,
+                        userId: appState.currentUser?.id ?? 0,
+                        appState: appState
+                    )
+                }
+                .onTapGesture {
+                    viewModel.selectProduct(product)
                 }
             }
         }

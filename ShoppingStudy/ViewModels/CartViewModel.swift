@@ -11,16 +11,19 @@ import SwiftUI
 final class CartViewModel: ObservableObject {
     @Published var cartItems: [CartItem] = []
     @Published var isLoading = false
-    @Published var showingCheckout = false
-    @Published var showingGiftOptions = false
     @Published var selectedGiftRecipient: User?
     @Published var giftMessage = ""
     @Published var isGiftMode = false
     @Published var showingSuccess = false
     @Published var successMessage = ""
     @Published var lastPurchaseId: Int?
+    @Published var checkoutCompleted = false
+    @Published var showingRemoveAlert = false
+    @Published var itemToDelete: CartItem?
+    @Published var showingClearCartAlert = false
+    @Published var showingGiftSelector = false
     
-    private let persistenceManager = UserPersistenceManager.shared
+    private let persistenceManager: UserPersistenceManagerProtocol
     private let cartService: CartServiceProtocol
     
     var totalPrice: Double {
@@ -31,7 +34,9 @@ final class CartViewModel: ObservableObject {
         cartItems.reduce(0) { $0 + $1.quantity }
     }
     
-    init(cartService: CartServiceProtocol = CartService()) {
+    init(persistenceManager: UserPersistenceManagerProtocol = UserPersistenceManager.shared,
+         cartService: CartServiceProtocol = CartService()) {
+        self.persistenceManager = persistenceManager
         self.cartService = cartService
     }
     
@@ -40,7 +45,7 @@ final class CartViewModel: ObservableObject {
         self.cartItems = user.currentCart
     }
     
-    func updateQuantity(itemId: String, quantity: Int, userId: Int, appState: AppState) {
+    func updateQuantity(itemId: String, quantity: Int, userId: Int, appState: AppStateProtocol) {
         persistenceManager.updateCartItemQuantity(
             itemId: itemId,
             quantity: quantity,
@@ -50,30 +55,54 @@ final class CartViewModel: ObservableObject {
         appState.updateCart()
     }
     
-    func removeItem(itemId: String, userId: Int, appState: AppState) {
-        persistenceManager.removeFromCart(itemId: itemId, for: userId)
-        loadCart(userId: userId)
-        appState.updateCart()
+    func prepareToRemoveItem(_ item: CartItem) {
+        itemToDelete = item
+        showingRemoveAlert = true
     }
     
-    func clearCart(userId: Int, appState: AppState) {
+    func confirmRemoveItem(userId: Int, appState: AppStateProtocol) {
+        guard let item = itemToDelete else { return }
+        persistenceManager.removeFromCart(itemId: item.id, for: userId)
+        loadCart(userId: userId)
+        appState.updateCart()
+        itemToDelete = nil
+        showingRemoveAlert = false
+    }
+    
+    func cancelRemoveItem() {
+        itemToDelete = nil
+        showingRemoveAlert = false
+    }
+    
+    func showClearCartConfirmation() {
+        showingClearCartAlert = true
+    }
+    
+    func confirmClearCart(userId: Int, appState: AppStateProtocol) {
         persistenceManager.clearCart(for: userId)
         loadCart(userId: userId)
         appState.updateCart()
+        showingClearCartAlert = false
     }
     
     func toggleGiftMode() {
         isGiftMode.toggle()
-        if !isGiftMode {
+        if isGiftMode {
+            showingGiftSelector = true
+        } else {
             selectedGiftRecipient = nil
             giftMessage = ""
         }
     }
     
-    func proceedToCheckout(userId: Int, currency: String, appState: AppState) async -> Bool {
+    func showGiftSelector() {
+        showingGiftSelector = true
+    }
+    
+    func proceedToCheckout(userId: Int, currency: String, appState: AppStateProtocol) async -> Bool {
         isLoading = true
+        checkoutCompleted = false
         
-        // Create cart request for API
         let cartProducts = cartItems.map { item in
             GetCartsResponse.CartProduct(
                 productId: item.productId,
@@ -88,13 +117,9 @@ final class CartViewModel: ObservableObject {
         )
         
         do {
-            // Send cart to API
             let response = try await cartService.addCart(cartRequest)
-            
-            // Store the purchase ID for later reference
             lastPurchaseId = response.id
             
-            // Complete purchase locally
             persistenceManager.completePurchase(
                 cart: cartItems,
                 orderId: response.id,
@@ -105,31 +130,24 @@ final class CartViewModel: ObservableObject {
                 message: giftMessage
             )
             
-            
-            // Prepare success message
             if isGiftMode, let recipient = selectedGiftRecipient {
                 successMessage = "gift_sent_successfully".localized() + "\n" +
                                 "your_gift_has_been_sent_to".localized() + " " + recipient.displayName
             } else {
                 successMessage = "order_completed".localized() + "\n" +
-                               "order_number".localized(with: response.id)
+                               "thank_you_purchase".localized()
             }
             
-            // Update app state
             await MainActor.run {
-                // Force reload user data to get updated purchase history
                 appState.loadCurrentUser()
                 appState.updateCart()
-                
-                // Clear cart items
                 self.cartItems = []
                 self.isGiftMode = false
                 self.selectedGiftRecipient = nil
                 self.giftMessage = ""
                 self.isLoading = false
-                
-                // Show success
                 self.showingSuccess = true
+                self.checkoutCompleted = true
             }
             
             return true
@@ -137,14 +155,15 @@ final class CartViewModel: ObservableObject {
             await MainActor.run {
                 self.isLoading = false
                 self.successMessage = "payment_failed".localized()
+                self.showingSuccess = true
             }
             return false
         }
     }
     
-    func resetSuccessState() {
+    func resetState() {
         showingSuccess = false
         successMessage = ""
+        checkoutCompleted = false
     }
 }
-

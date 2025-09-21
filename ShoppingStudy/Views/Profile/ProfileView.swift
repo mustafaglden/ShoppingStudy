@@ -5,32 +5,19 @@
 //  Created by Mustafa Gülden on 20.09.2025.
 //
 
-// ProfileView.swift - Updated with proper date formatting and statistics
 import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = ProfileViewModel()
-    @State private var showingSettings = false
-    @State private var showingLogoutAlert = false
-    @State private var selectedCart: GetCartsResponse?
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // User Header
                 userHeaderSection
-                
-                // Statistics with API data integration
                 statisticsSection
-                
-                // Quick Actions
                 quickActionsSection
-                
-                // Purchase History
                 purchaseHistorySection
-                
-                // Logout Button
                 logoutButton
             }
             .padding()
@@ -39,24 +26,30 @@ struct ProfileView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    showingSettings = true
+                    viewModel.showSettings()
                 }) {
                     Image(systemName: "gearshape.fill")
                 }
             }
         }
-        .sheet(isPresented: $showingSettings) {
+        .sheet(isPresented: $viewModel.showingSettings) {
             SettingsView()
                 .environmentObject(appState)
+                .onDisappear {
+                    viewModel.dismissSettings()
+                }
         }
-        .sheet(item: $selectedCart) { cart in
+        .sheet(item: $viewModel.selectedCart) { cart in
             CartDetailView(cart: cart, viewModel: viewModel)
                 .environmentObject(appState)
+                .onDisappear {
+                    viewModel.dismissCartDetail()
+                }
         }
-        .alert("logout".localized(), isPresented: $showingLogoutAlert) {
+        .alert("logout".localized(), isPresented: $viewModel.showingLogoutAlert) {
             Button("cancel".localized(), role: .cancel) {}
             Button("logout".localized(), role: .destructive) {
-                appState.logout()
+                viewModel.performLogout(appState: appState)
             }
         } message: {
             Text("logout_confirmation".localized())
@@ -70,7 +63,6 @@ struct ProfileView: View {
     
     private var userHeaderSection: some View {
         VStack(spacing: 12) {
-            // Avatar
             ZStack {
                 Circle()
                     .fill(LinearGradient(
@@ -86,7 +78,6 @@ struct ProfileView: View {
                     .foregroundColor(.white)
             }
             
-            // User Info
             VStack(spacing: 4) {
                 Text(appState.currentUser?.username ?? "")
                     .font(.title2)
@@ -109,15 +100,17 @@ struct ProfileView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 12) {
-                // Total amount from both local purchases AND API carts
                 StatCard(
                     title: "total_purchases".localized(),
-                    value: appState.formatPrice(calculateTotalPurchases()),
+                    value: appState.formatPrice(
+                        viewModel.calculateTotalPurchases(
+                            localTotal: appState.totalAmountSpent
+                        )
+                    ),
                     icon: "cart.fill",
                     color: .blue
                 )
                 
-                // Orders count from API
                 StatCard(
                     title: "orders".localized(),
                     value: "\(viewModel.userCarts.count)",
@@ -125,7 +118,6 @@ struct ProfileView: View {
                     color: .green
                 )
                 
-                // Favorite products count
                 StatCard(
                     title: "favorite_products".localized(),
                     value: "\(appState.favoriteProductIds.count)",
@@ -133,7 +125,6 @@ struct ProfileView: View {
                     color: .red
                 )
                 
-                // Combined gifts sent and received
                 StatCard(
                     title: "gifts_sent".localized(),
                     value: "\(appState.currentUser?.giftsSent.count ?? 0)",
@@ -142,7 +133,6 @@ struct ProfileView: View {
                 )
             }
             
-            // Add received gifts if any
             if let receivedCount = appState.currentUser?.giftsReceived.count, receivedCount > 0 {
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
@@ -178,24 +168,6 @@ struct ProfileView: View {
                     icon: "dollarsign.circle",
                     color: .green
                 )
-                
-//                QuickActionButton(
-//                    title: "language".localized(),
-//                    subtitle: appState.currentLanguage.displayName,
-//                    icon: "globe",
-//                    color: .blue
-//                ) {
-//                    showingSettings = true
-//                }
-//                
-//                QuickActionButton(
-//                    title: "currency".localized(),
-//                    subtitle: appState.currentCurrency.displayName,
-//                    icon: "dollarsign.circle",
-//                    color: .green
-//                ) {
-//                    showingSettings = true
-//                }
             }
         }
     }
@@ -226,36 +198,17 @@ struct ProfileView: View {
                     Spacer()
                 }
             } else if viewModel.userCarts.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.largeTitle)
-                        .foregroundColor(.gray)
-                    
-                    Text("no_purchase_history".localized())
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Text("no_purchases_yet".localized())
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 30)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
+                emptyHistoryView
             } else {
                 ForEach(viewModel.userCarts.prefix(5)) { cart in
                     CartHistoryRow(cart: cart, viewModel: viewModel)
                         .onTapGesture {
-                            selectedCart = cart
+                            viewModel.selectCart(cart)
                         }
                 }
                 
                 if viewModel.userCarts.count > 5 {
-                    Button(action: {
-                        // Could navigate to full history view
-                    }) {
+                    Button(action: {}) {
                         HStack {
                             Text("view_all_orders".localized(with: viewModel.userCarts.count))
                                 .font(.caption)
@@ -270,9 +223,30 @@ struct ProfileView: View {
         }
     }
     
+    private var emptyHistoryView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.largeTitle)
+                .foregroundColor(.gray)
+            
+            Text("no_purchase_history".localized())
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Text("no_purchases_yet".localized())
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 30)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(10)
+    }
+    
     private var logoutButton: some View {
         Button(action: {
-            showingLogoutAlert = true
+            viewModel.confirmLogout()
         }) {
             HStack {
                 Image(systemName: "arrow.right.square")
@@ -285,17 +259,5 @@ struct ProfileView: View {
             .cornerRadius(10)
         }
         .padding(.top)
-    }
-    
-    // Helper function to calculate total purchases from API carts
-    private func calculateTotalPurchases() -> Double {
-        var total = appState.currentUser?.totalPurchases ?? 0
-        
-        // Add API cart totals if not already included
-        for cart in viewModel.userCarts {
-            total += viewModel.calculateCartTotal(cart: cart)
-        }
-        
-        return total
     }
 }

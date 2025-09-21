@@ -11,9 +11,12 @@ import SwiftUI
 final class ProfileViewModel: ObservableObject {
     @Published var userCarts: [GetCartsResponse] = []
     @Published var isLoadingCarts = false
-    @Published var cartProducts: [Int: Product] = [:] 
+    @Published var cartProducts: [Int: Product] = [:]
     @Published var errorMessage: String?
     @Published var showingError = false
+    @Published var showingSettings = false
+    @Published var showingLogoutAlert = false
+    @Published var selectedCart: GetCartsResponse?
     
     private let cartService: CartServiceProtocol
     private let productService: ProductServiceProtocol
@@ -24,12 +27,36 @@ final class ProfileViewModel: ObservableObject {
         self.productService = productService
     }
     
+    func showSettings() {
+        showingSettings = true
+    }
+    
+    func dismissSettings() {
+        showingSettings = false
+    }
+    
+    func confirmLogout() {
+        showingLogoutAlert = true
+    }
+    
+    func performLogout(appState: AppStateProtocol) {
+        appState.logout()
+        showingLogoutAlert = false
+    }
+    
+    func selectCart(_ cart: GetCartsResponse) {
+        selectedCart = cart
+    }
+    
+    func dismissCartDetail() {
+        selectedCart = nil
+    }
+    
     func loadUserCarts(userId: Int) async {
         isLoadingCarts = true
         errorMessage = nil
         
         do {
-            // Fetch carts from API
             let carts = try await cartService.getUserCarts(userId: userId)
             
             // Sort by date (newest first)
@@ -46,7 +73,6 @@ final class ProfileViewModel: ObservableObject {
                 self.isLoadingCarts = false
             }
             
-            // Load product details for all carts
             await loadProductsForCarts(sortedCarts)
             
         } catch {
@@ -59,7 +85,6 @@ final class ProfileViewModel: ObservableObject {
     }
     
     private func loadProductsForCarts(_ carts: [GetCartsResponse]) async {
-        // Get unique product IDs
         var productIds = Set<Int>()
         for cart in carts {
             for product in cart.products {
@@ -67,7 +92,6 @@ final class ProfileViewModel: ObservableObject {
             }
         }
         
-        // Load each product
         for productId in productIds {
             do {
                 let product = try await productService.fetchProductDetail(id: productId)
@@ -90,6 +114,14 @@ final class ProfileViewModel: ObservableObject {
             if let product = cartProducts[cartProduct.productId] {
                 total += product.price * Double(cartProduct.quantity)
             }
+        }
+        return total
+    }
+    
+    func calculateTotalPurchases(localTotal: Double) -> Double {
+        var total = localTotal
+        for cart in userCarts {
+            total += calculateCartTotal(cart: cart)
         }
         return total
     }

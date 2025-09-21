@@ -13,7 +13,11 @@ struct PaymentFormView: View {
     @Binding var expiryDate: String
     @Binding var cvv: String
     
+    let isFormValid: Bool
     let onPay: () -> Void
+    let formatCardNumber: (String) -> String
+    let formatExpiryDate: (String) -> String
+    let limitCVV: (String) -> String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -21,35 +25,15 @@ struct PaymentFormView: View {
                 .font(.headline)
             
             VStack(spacing: 15) {
-                // Card Number
-                cardNumberView
-                
-                // Cardholder Name
-                cardholderNameView
-                
-                // Expiry + CVV
-                expiryAndCvvView
-                
-                // Pay Button
-                Button(action: onPay) {
-                    HStack {
-                        Image(systemName: "lock.shield")
-                        Text("pay_now".localized())
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(isFormValid ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .disabled(!isFormValid)
+                cardNumberField
+                cardholderNameField
+                expiryAndCvvFields
+                payButton
             }
         }
     }
     
-    @ViewBuilder
-    private var cardNumberView: some View {
+    private var cardNumberField: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("card_number".localized())
                 .font(.caption)
@@ -70,8 +54,7 @@ struct PaymentFormView: View {
         }
     }
     
-    @ViewBuilder
-    private var cardholderNameView: some View {
+    private var cardholderNameField: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("cardholder_name".localized())
                 .font(.caption)
@@ -89,8 +72,7 @@ struct PaymentFormView: View {
         }
     }
     
-    @ViewBuilder
-    private var expiryAndCvvView: some View {
+    private var expiryAndCvvFields: some View {
         HStack(spacing: 15) {
             VStack(alignment: .leading, spacing: 5) {
                 Text("mm_yy".localized())
@@ -122,7 +104,7 @@ struct PaymentFormView: View {
                     TextField("123", text: $cvv)
                         .keyboardType(.numberPad)
                         .onChange(of: cvv) { _, newValue in
-                            cvv = String(newValue.prefix(4))
+                            cvv = limitCVV(newValue)
                         }
                 }
                 .padding()
@@ -132,37 +114,19 @@ struct PaymentFormView: View {
         }
     }
     
-    private var isFormValid: Bool {
-        !cardNumber.isEmpty &&
-        cardNumber.replacingOccurrences(of: " ", with: "").count >= 16 &&
-        !cardholderName.isEmpty &&
-        expiryDate.count == 5 &&
-        cvv.count >= 3
-    }
-    
-    private func formatCardNumber(_ value: String) -> String {
-        let cleaned = value.replacingOccurrences(of: " ", with: "")
-        let truncated = String(cleaned.prefix(16))
-        
-        var formatted = ""
-        for (index, character) in truncated.enumerated() {
-            if index > 0 && index % 4 == 0 {
-                formatted += " "
+    private var payButton: some View {
+        Button(action: onPay) {
+            HStack {
+                Image(systemName: "lock.shield")
+                Text("pay_now".localized())
+                    .fontWeight(.semibold)
             }
-            formatted.append(character)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .background(isFormValid ? Color.blue : Color.gray)
+            .foregroundColor(.white)
+            .cornerRadius(10)
         }
-        return formatted
-    }
-    
-    private func formatExpiryDate(_ value: String) -> String {
-        let cleaned = value.replacingOccurrences(of: "/", with: "")
-        let truncated = String(cleaned.prefix(4))
-        
-        if truncated.count >= 3 {
-            let month = String(truncated.prefix(2))
-            let year = String(truncated.suffix(truncated.count - 2))
-            return "\(month)/\(year)"
-        }
-        return truncated
+        .disabled(!isFormValid)
     }
 }

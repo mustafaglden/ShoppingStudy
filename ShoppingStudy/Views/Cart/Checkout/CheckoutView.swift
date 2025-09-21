@@ -16,95 +16,96 @@ struct CheckoutView: View {
     
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel: CheckoutViewModel
     
-    @State private var cardNumber = ""
-    @State private var cardholderName = ""
-    @State private var expiryDate = ""
-    @State private var cvv = ""
-    @State private var showingSuccess = false
-    @State private var successOrderId: Int?
-    
-    private let cartViewModel = CartViewModel()
+    init(cartItems: [CartItem], totalAmount: Double, isGift: Bool,
+         giftRecipient: User?, giftMessage: String) {
+        self.cartItems = cartItems
+        self.totalAmount = totalAmount
+        self.isGift = isGift
+        self.giftRecipient = giftRecipient
+        self.giftMessage = giftMessage
+        self._viewModel = StateObject(wrappedValue: CheckoutViewModel())
+    }
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    OrderSummaryView(
-                        cartItems: cartItems,
-                        totalAmount: totalAmount,
-                        appState: appState
-                    )
-                    
-                    if isGift, let recipient = giftRecipient {
-                        GiftInfoView(
-                            recipient: recipient,
-                            giftMessage: giftMessage
-                        )
-                    }
-                    
-                    PaymentFormView(
-                        cardNumber: $cardNumber,
-                        cardholderName: $cardholderName,
-                        expiryDate: $expiryDate,
-                        cvv: $cvv,
-                        onPay: processPayment
-                    )
-                }
-                .padding()
-            }
-            .navigationTitle("checkout".localized())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("cancel".localized()) {
+            if viewModel.isProcessing {
+                ProcessingPaymentView()
+            } else if viewModel.showingSuccess {
+                CheckoutSuccessView(
+                    message: viewModel.successMessage,
+                    orderId: viewModel.successOrderId,
+                    onContinueShopping: {
                         dismiss()
                     }
-                }
-            }
-            .alert("success".localized(), isPresented: $showingSuccess) {
-                Button("continue_shopping".localized()) {
-                    appState.loadCurrentUser()
-                    dismiss()
-                }
-            } message: {
-                successAlertMessage
+                )
+            } else {
+                checkoutForm
             }
         }
     }
     
-    // Alert message
-    private var successAlertMessage: some View {
-        if isGift, let recipient = giftRecipient {
-            let msg = "gift_sent_successfully".localized() + "\n" +
-                      "your_gift_has_been_sent_to".localized() + " " + recipient.displayName
-            return Text(msg)
-        } else {
-            let msg = "order_completed".localized() + "\n" +
-                      "thank_you_purchase".localized()
-            return Text(msg)
+    private var checkoutForm: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                OrderSummaryView(
+                    cartItems: cartItems,
+                    totalAmount: totalAmount,
+                    appState: appState
+                )
+                
+                if isGift, let recipient = giftRecipient {
+                    GiftInfoView(
+                        recipient: recipient,
+                        giftMessage: giftMessage
+                    )
+                }
+                
+                PaymentFormView(
+                    cardNumber: $viewModel.cardNumber,
+                    cardholderName: $viewModel.cardholderName,
+                    expiryDate: $viewModel.expiryDate,
+                    cvv: $viewModel.cvv,
+                    isFormValid: viewModel.isFormValid,
+                    onPay: processPayment,
+                    formatCardNumber: viewModel.formatCardNumber,
+                    formatExpiryDate: viewModel.formatExpiryDate,
+                    limitCVV: viewModel.limitCVV
+                )
+            }
+            .padding()
+        }
+        .navigationTitle("checkout".localized())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("cancel".localized()) {
+                    dismiss()
+                }
+            }
+        }
+        .alert("error".localized(), isPresented: $viewModel.showingError) {
+            Button("ok".localized()) {
+                viewModel.showingError = false
+            }
+        } message: {
+            Text(viewModel.errorMessage)
         }
     }
     
     private func processPayment() {
-        cartViewModel.cartItems = cartItems
-        cartViewModel.isGiftMode = isGift
-        cartViewModel.selectedGiftRecipient = giftRecipient
-        cartViewModel.giftMessage = giftMessage
-        
         Task {
-            let success = await cartViewModel.proceedToCheckout(
-                userId: appState.currentUser?.id ?? 0,
-                currency: appState.currentCurrency.rawValue,
+            let success = await viewModel.processPayment(
+                cartItems: cartItems,
+                isGift: isGift,
+                giftRecipient: giftRecipient,
+                giftMessage: giftMessage,
                 appState: appState
             )
             
-            await MainActor.run {
-                if success {
-                    successOrderId = cartViewModel.lastPurchaseId
-                    appState.loadCurrentUser()
-                    showingSuccess = true
-                }
+            if !success {
+                // Error is handled by the alert
             }
         }
     }

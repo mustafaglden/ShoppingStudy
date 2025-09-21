@@ -8,25 +8,30 @@
 import SwiftUI
 import Combine
 
-final class LocalizationManager: ObservableObject {
+protocol LocalizationManagerProtocol: ObservableObject {
+    var currentLanguage: Language { get set }
+    var bundle: Bundle { get set }
+    
+    func setLanguage(_ language: Language)
+    func localizedString(_ key: String) -> String
+}
+
+final class LocalizationManager: LocalizationManagerProtocol {
     @Published var currentLanguage: Language = .english
     @Published var bundle: Bundle = .main
     
     static let shared = LocalizationManager()
     
-    private init() {
+    init() {
         loadSavedLanguage()
         updateBundle()
     }
     
     func setLanguage(_ language: Language) {
         currentLanguage = language
-        UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
-        UserDefaults.standard.synchronize()
-        
+        UserDefaults.appSuite.set([language.rawValue], forKey: "AppleLanguages")
+        UserDefaults.appSuite.synchronize()
         updateBundle()
-        
-        // Force UI update
         NotificationCenter.default.post(
             name: Notification.Name("LanguageDidChange"),
             object: nil
@@ -43,7 +48,7 @@ final class LocalizationManager: ObservableObject {
     }
     
     private func loadSavedLanguage() {
-        if let languageCodes = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String],
+        if let languageCodes = UserDefaults.appSuite.array(forKey: "AppleLanguages") as? [String],
            let firstLanguage = languageCodes.first {
             if firstLanguage.hasPrefix("tr") {
                 currentLanguage = .turkish
@@ -51,7 +56,6 @@ final class LocalizationManager: ObservableObject {
                 currentLanguage = .english
             }
         } else {
-            // Default to device language or English
             if let preferredLanguage = Locale.current.language.languageCode?.identifier {
                 currentLanguage = preferredLanguage.hasPrefix("tr") ? .turkish : .english
             }

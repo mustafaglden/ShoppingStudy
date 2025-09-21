@@ -7,14 +7,44 @@
 
 import Foundation
 
-final class UserPersistenceManager {
+protocol UserPersistenceManagerProtocol {
+    func createUser(username: String, email: String) -> UserProfile
+    func getCurrentUser() -> UserProfile?
+    func setCurrentUser(_ userId: Int)
+    func getUser(by id: Int) -> UserProfile?
+    func getUser(by username: String, password: String) -> UserProfile?
+    func saveUser(_ user: UserProfile)
+    func logout()
+    
+    // Cart Management
+    func addToCart(product: Product, quantity: Int, for userId: Int)
+    func updateCartItemQuantity(itemId: String, quantity: Int, for userId: Int)
+    func removeFromCart(itemId: String, for userId: Int)
+    func clearCart(for userId: Int)
+    
+    // Favorites Management
+    func toggleFavorite(productId: Int, for userId: Int) -> Bool
+    func isFavorite(productId: Int, for userId: Int) -> Bool
+    
+    // Purchase Management
+    func completePurchase(cart: [CartItem], orderId: Int, userId: Int, currency: String, isGift: Bool, recipient: User?, message: String?)
+    
+    // Settings Management
+    func updateUserSettings(userId: Int, currency: String?, language: String?)
+}
+
+final class UserPersistenceManager: UserPersistenceManagerProtocol {
     static let shared = UserPersistenceManager()
     
     private let userDefaultsKey = "com.shoppingStudy.userProfiles"
     private let currentUserKey = "com.shoppingStudy.currentUserId"
     private let lastUserIdKey = "com.shoppingStudy.lastUserId"
     
-    private init() {}
+    private let userDefaults: UserDefaults
+    
+    init(userDefaults: UserDefaults = .appSuite) {
+        self.userDefaults = userDefaults
+    }
     
     // MARK: - User Management
     func createUser(username: String, email: String) -> UserProfile {
@@ -25,14 +55,14 @@ final class UserPersistenceManager {
     }
     
     func getCurrentUser() -> UserProfile? {
-        guard let userId = UserDefaults.standard.object(forKey: currentUserKey) as? Int else {
+        guard let userId = userDefaults.object(forKey: currentUserKey) as? Int else {
             return nil
         }
         return getUser(by: userId)
     }
     
     func setCurrentUser(_ userId: Int) {
-        UserDefaults.standard.set(userId, forKey: currentUserKey)
+        userDefaults.set(userId, forKey: currentUserKey)
     }
     
     func getUser(by id: Int) -> UserProfile? {
@@ -56,11 +86,10 @@ final class UserPersistenceManager {
     }
     
     func logout() {
-        UserDefaults.standard.removeObject(forKey: currentUserKey)
+        userDefaults.removeObject(forKey: currentUserKey)
     }
     
     // MARK: - Cart Management
-    
     func addToCart(product: Product, quantity: Int, for userId: Int) {
         guard var user = getUser(by: userId) else { return }
         
@@ -100,7 +129,6 @@ final class UserPersistenceManager {
     }
     
     // MARK: - Favorites Management
-    
     func toggleFavorite(productId: Int, for userId: Int) -> Bool {
         guard var user = getUser(by: userId) else { return false }
         
@@ -121,8 +149,8 @@ final class UserPersistenceManager {
     }
     
     // MARK: - Purchase Management
-    
-    func completePurchase(cart: [CartItem], orderId: Int, userId: Int, currency: String, isGift: Bool = false, recipient: User? = nil, message: String? = nil) {
+    func completePurchase(cart: [CartItem], orderId: Int, userId: Int, currency: String,
+                         isGift: Bool = false, recipient: User? = nil, message: String? = nil) {
         guard var user = getUser(by: userId) else { return }
         
         let purchase = PurchaseHistory(
@@ -139,7 +167,6 @@ final class UserPersistenceManager {
         user.totalPurchases += purchase.totalAmount
         user.totalItemsPurchased += cart.reduce(0) { $0 + $1.quantity }
         
-        // If it's a gift, update gift records
         if isGift, let recipient = recipient {
             let giftRecord = UserProfile.GiftRecord(
                 id: UUID().uuidString,
@@ -153,20 +180,17 @@ final class UserPersistenceManager {
             
             user.giftsSent.append(giftRecord)
             
-            // Update recipient's received gifts
             if var recipientUser = getUser(by: recipient.id) {
                 recipientUser.giftsReceived.append(giftRecord)
                 saveUser(recipientUser)
             }
         }
         
-        // Clear the cart after purchase
         user.currentCart.removeAll()
         saveUser(user)
     }
     
     // MARK: - Settings Management
-    
     func updateUserSettings(userId: Int, currency: String? = nil, language: String? = nil) {
         guard var user = getUser(by: userId) else { return }
         
@@ -182,9 +206,8 @@ final class UserPersistenceManager {
     }
     
     // MARK: - Private Helpers
-    
     private func getAllUsers() -> [UserProfile] {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
+        guard let data = userDefaults.data(forKey: userDefaultsKey),
               let users = try? JSONDecoder().decode([UserProfile].self, from: data) else {
             return []
         }
@@ -193,14 +216,14 @@ final class UserPersistenceManager {
     
     private func saveAllUsers(_ users: [UserProfile]) {
         if let data = try? JSONEncoder().encode(users) {
-            UserDefaults.standard.set(data, forKey: userDefaultsKey)
+            userDefaults.set(data, forKey: userDefaultsKey)
         }
     }
     
     private func generateNextUserId() -> Int {
-        let lastId = UserDefaults.standard.integer(forKey: lastUserIdKey)
+        let lastId = userDefaults.integer(forKey: lastUserIdKey)
         let newId = lastId + 1
-        UserDefaults.standard.set(newId, forKey: lastUserIdKey)
+        userDefaults.set(newId, forKey: lastUserIdKey)
         return newId
     }
 }

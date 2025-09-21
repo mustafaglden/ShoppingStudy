@@ -88,7 +88,7 @@ struct CartHistoryRow: View {
         
         let relativeDate = formatter.localizedString(for: date, relativeTo: Date())
         
-        // If it's very old (like 2020), show the actual date
+        // If it's very old, show the actual date
         let calendar = Calendar.current
         if let years = calendar.dateComponents([.year], from: date, to: Date()).year, years >= 2 {
             let dateFormatter = DateFormatter()

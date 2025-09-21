@@ -9,36 +9,59 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class AppState: ObservableObject {
+protocol AppStateProtocol: ObservableObject {
+    var currentUser: UserProfile? { get set }
+    var isAuthenticated: Bool { get set }
+    var currentLanguage: Language { get set }
+    var currentCurrency: Currency { get set }
+    var exchangeRates: [String: Double] { get set }
+    var cartItemCount: Int { get set }
+    var totalAmountSpent: Double { get set }
+    var favoriteProductIds: Set<Int> { get set }
+    var giftsSentCount: Int { get set }
+    
+    func loadCurrentUser()
+    func login(user: UserProfile)
+    func logout()
+    func updateCart()
+    func updateFavorites()
+    func updateAfterPurchase()
+    func convertPrice(_ price: Double) -> Double
+    func formatPrice(_ price: Double) -> String
+    func notifyPurchaseCompleted()
+}
+
+@MainActor
+final class AppState: AppStateProtocol {
     @Published var currentUser: UserProfile?
     @Published var isAuthenticated = false
     @Published var currentLanguage: Language = .english
     @Published var currentCurrency: Currency = .usd
     @Published var exchangeRates: [String: Double] = [:]
     @Published var cartItemCount: Int = 0
-    
     @Published var totalAmountSpent: Double = 0
     @Published var favoriteProductIds: Set<Int> = []
-    @Published var giftsSentCount: Int = 0             
-        
-    private let persistenceManager = UserPersistenceManager.shared
-    private let currencyService = CurrencyService()
+    @Published var giftsSentCount: Int = 0
+    
+    private let persistenceManager: UserPersistenceManagerProtocol
+    private let currencyService: CurrencyServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
+    init(persistenceManager: UserPersistenceManagerProtocol = UserPersistenceManager.shared,
+         currencyService: CurrencyServiceProtocol = CurrencyService()) {
+        self.persistenceManager = persistenceManager
+        self.currencyService = currencyService
         loadCurrentUser()
         setupObservers()
     }
     
     private func setupObservers() {
-        // Observe language changes
         $currentLanguage
             .sink { [weak self] language in
                 self?.updateLanguage(language)
             }
             .store(in: &cancellables)
         
-        // Observe currency changes
         $currentCurrency
             .sink { [weak self] currency in
                 Task {
@@ -47,7 +70,6 @@ final class AppState: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Listen for purchase updates
         NotificationCenter.default.publisher(for: Notification.Name("PurchaseCompleted"))
             .sink { [weak self] _ in
                 self?.loadCurrentUser()
@@ -61,14 +83,11 @@ final class AppState: ObservableObject {
         if let user = persistenceManager.getCurrentUser() {
             self.currentUser = user
             self.isAuthenticated = true
-            
-            // Only update these specific metrics
             self.cartItemCount = user.currentCart.count
             self.totalAmountSpent = user.totalPurchases
             self.favoriteProductIds = user.favorites
             self.giftsSentCount = user.giftsSent.count
             
-            // Load user preferences
             if let currency = Currency(rawValue: user.preferredCurrency) {
                 self.currentCurrency = currency
             }
@@ -82,15 +101,11 @@ final class AppState: ObservableObject {
         persistenceManager.setCurrentUser(user.id)
         self.currentUser = user
         self.isAuthenticated = true
-        
-        // Update only required metrics
         self.cartItemCount = user.currentCart.count
         self.totalAmountSpent = user.totalPurchases
         self.favoriteProductIds = user.favorites
         self.giftsSentCount = user.giftsSent.count
-        
         loadUserPreferences()
-        
     }
     
     func logout() {
@@ -114,7 +129,6 @@ final class AppState: ObservableObject {
     
     func updateFavorites() {
         print("❤️ Updating favorites...")
-        
         if let userId = currentUser?.id,
            let user = persistenceManager.getUser(by: userId) {
             self.currentUser = user
@@ -150,10 +164,10 @@ final class AppState: ObservableObject {
     }
     
     private func updateLanguage(_ language: Language) {
-        UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
-        
+        UserDefaults.appSuite.set([language.rawValue], forKey: "AppleLanguages")
+        guard let user = currentUser else { return }
         if let userId = currentUser?.id {
-            persistenceManager.updateUserSettings(userId: userId, language: language.rawValue)
+            persistenceManager.updateUserSettings(userId: userId, currency: user.preferredCurrency, language: language.rawValue)
         }
     }
     
@@ -163,9 +177,10 @@ final class AppState: ObservableObject {
             await MainActor.run {
                 self.exchangeRates = rates
             }
-            
+            guard let user = currentUser else { return }
+
             if let userId = currentUser?.id {
-                persistenceManager.updateUserSettings(userId: userId, currency: currency.rawValue)
+                persistenceManager.updateUserSettings(userId: userId, currency: currency.rawValue, language: user.preferredLanguage)
             }
         } catch {
             print("Failed to load exchange rates: \(error)")

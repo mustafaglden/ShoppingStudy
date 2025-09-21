@@ -19,18 +19,21 @@ final class ProductListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showingError = false
     @Published var sortOption: SortOption = .none
+    @Published var showingProductDetail = false
+    @Published var selectedProduct: Product?
     
     private let productService: ProductServiceProtocol
-    private let persistenceManager = UserPersistenceManager.shared
+    private let persistenceManager: UserPersistenceManagerProtocol
     private var cancellables = Set<AnyCancellable>()
     
-    init(productService: ProductServiceProtocol = ProductService()) {
+    init(productService: ProductServiceProtocol = ProductService(),
+         persistenceManager: UserPersistenceManagerProtocol = UserPersistenceManager.shared) {
         self.productService = productService
+        self.persistenceManager = persistenceManager
         setupObservers()
     }
     
     private func setupObservers() {
-        // Combine all filters into one pipeline
         Publishers.CombineLatest3($searchText, $selectedCategory, $sortOption)
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .sink { [weak self] _, _, _ in
@@ -44,10 +47,8 @@ final class ProductListViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            // Load categories first
             let fetchedCategories = try await productService.fetchCategories()
             
-            // Then load products based on selected category
             let fetchedProducts: [Product]
             if selectedCategory == "all" {
                 fetchedProducts = try await productService.fetchProducts(
@@ -66,7 +67,6 @@ final class ProductListViewModel: ObservableObject {
             await MainActor.run {
                 self.categories = ["all"] + fetchedCategories
                 self.products = fetchedProducts
-
                 self.applyFiltersAndSort()
                 self.isLoading = false
             }
@@ -77,6 +77,11 @@ final class ProductListViewModel: ObservableObject {
                 self.isLoading = false
             }
         }
+    }
+    
+    func selectCategory(_ category: String) async {
+        selectedCategory = category
+        await loadProductsByCategory(category)
     }
     
     func loadProductsByCategory(_ category: String) async {
@@ -112,10 +117,23 @@ final class ProductListViewModel: ObservableObject {
         }
     }
     
+    func clearSearch() {
+        searchText = ""
+    }
+    
+    func selectProduct(_ product: Product) {
+        selectedProduct = product
+        showingProductDetail = true
+    }
+    
+    func dismissProductDetail() {
+        showingProductDetail = false
+        selectedProduct = nil
+    }
+    
     private func applyFiltersAndSort() {
         var result = products
         
-        // Step 1: Apply search filter
         if !searchText.isEmpty {
             result = result.filter { product in
                 product.title.localizedCaseInsensitiveContains(searchText) ||
@@ -126,7 +144,6 @@ final class ProductListViewModel: ObservableObject {
         
         switch sortOption {
         case .none:
-            // Keep original order
             break
         case .priceAsc:
             result.sort { $0.price < $1.price }
@@ -139,14 +156,14 @@ final class ProductListViewModel: ObservableObject {
         filteredProducts = result
     }
     
-    func toggleFavorite(productId: Int, userId: Int, appState: AppState) {
+    func toggleFavorite(productId: Int, userId: Int, appState: AppStateProtocol) {
         let isFavorite = persistenceManager.toggleFavorite(productId: productId, for: userId)
         appState.updateFavorites()
         
         let message = isFavorite ? "Added to favorites" : "Removed from favorites"
     }
     
-    func addToCart(product: Product, quantity: Int, userId: Int, appState: AppState) {
+    func addToCart(product: Product, quantity: Int, userId: Int, appState: AppStateProtocol) {
         persistenceManager.addToCart(product: product, quantity: quantity, for: userId)
         appState.updateCart()
     }

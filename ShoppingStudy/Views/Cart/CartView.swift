@@ -10,10 +10,7 @@ import SwiftUI
 struct CartView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = CartViewModel()
-    @State private var showingClearCartAlert = false
-    @State private var itemToDelete: CartItem?
     @State private var showingCheckout = false
-    @State private var showingGiftSelector = false
     
     var body: some View {
         ZStack {
@@ -28,7 +25,7 @@ struct CartView: View {
             if !viewModel.cartItems.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        showingClearCartAlert = true
+                        viewModel.showClearCartConfirmation()
                     }) {
                         Text("clear_cart".localized())
                             .foregroundColor(.red)
@@ -39,10 +36,10 @@ struct CartView: View {
         .onAppear {
             viewModel.loadCart(userId: appState.currentUser?.id ?? 0)
         }
-        .alert("clear_cart".localized(), isPresented: $showingClearCartAlert) {
+        .alert("clear_cart".localized(), isPresented: $viewModel.showingClearCartAlert) {
             Button("cancel".localized(), role: .cancel) {}
             Button("clear_cart".localized(), role: .destructive) {
-                viewModel.clearCart(
+                viewModel.confirmClearCart(
                     userId: appState.currentUser?.id ?? 0,
                     appState: appState
                 )
@@ -50,22 +47,18 @@ struct CartView: View {
         } message: {
             Text("confirm_clear_cart".localized())
         }
-        .alert("remove_item".localized(), isPresented: .constant(itemToDelete != nil)) {
+        .alert("remove_item".localized(), isPresented: $viewModel.showingRemoveAlert) {
             Button("cancel".localized(), role: .cancel) {
-                itemToDelete = nil
+                viewModel.cancelRemoveItem()
             }
             Button("remove".localized(), role: .destructive) {
-                if let item = itemToDelete {
-                    viewModel.removeItem(
-                        itemId: item.id,
-                        userId: appState.currentUser?.id ?? 0,
-                        appState: appState
-                    )
-                    itemToDelete = nil
-                }
+                viewModel.confirmRemoveItem(
+                    userId: appState.currentUser?.id ?? 0,
+                    appState: appState
+                )
             }
         } message: {
-            if let item = itemToDelete {
+            if let item = viewModel.itemToDelete {
                 Text("confirm_remove_item".localized(with: item.product.title))
             }
         }
@@ -78,12 +71,17 @@ struct CartView: View {
                 giftMessage: viewModel.giftMessage
             )
             .environmentObject(appState)
+            .onDisappear {
+                // Reload cart when returning from checkout
+                viewModel.loadCart(userId: appState.currentUser?.id ?? 0)
+            }
         }
-        .sheet(isPresented: $showingGiftSelector) {
+        .sheet(isPresented: $viewModel.showingGiftSelector) {
             GiftRecipientSelectorView(
                 selectedRecipient: $viewModel.selectedGiftRecipient,
                 giftMessage: $viewModel.giftMessage
             )
+            .environmentObject(appState)
         }
     }
     
@@ -107,7 +105,7 @@ struct CartView: View {
                                 )
                             },
                             onDelete: {
-                                itemToDelete = item
+                                viewModel.prepareToRemoveItem(item)
                             }
                         )
                         .environmentObject(appState)
@@ -117,53 +115,12 @@ struct CartView: View {
             }
             
             // Bottom Section
-            VStack(spacing: 15) {
-                // Summary
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(viewModel.itemCount == 1 ? "one_item".localized() : "multiple_items".localized(with: viewModel.itemCount))")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("total".localized())
-                            .font(.headline)
-                    }
-                    
-                    Spacer()
-                    
-                    Text(appState.formatPrice(viewModel.totalPrice))
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.blue)
-                }
-                .padding(.horizontal)
-                
-                // Checkout Button
-                Button(action: {
-                    showingCheckout = true
-                }) {
-                    HStack {
-                        Image(systemName: "creditcard.fill")
-                        Text("checkout".localized())
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .padding(.horizontal)
-            }
-            .padding(.vertical)
-            .background(Color(.systemBackground))
-            .shadow(color: .black.opacity(0.05), radius: 5, y: -2)
+            cartBottomSection
         }
     }
     
     private var giftModeSection: some View {
         VStack(spacing: 12) {
-            // Gift Toggle
             HStack {
                 Image(systemName: viewModel.isGiftMode ? "gift.fill" : "gift")
                     .foregroundColor(viewModel.isGiftMode ? .white : .blue)
@@ -174,20 +131,16 @@ struct CartView: View {
                 
                 Spacer()
                 
-                Toggle("", isOn: $viewModel.isGiftMode)
-                    .labelsHidden()
+                Toggle("", isOn: Binding(
+                    get: { viewModel.isGiftMode },
+                    set: { _ in viewModel.toggleGiftMode() }
+                ))
+                .labelsHidden()
             }
             .padding()
             .background(viewModel.isGiftMode ? Color.blue : Color.blue.opacity(0.1))
             .cornerRadius(10)
-            .onTapGesture {
-                viewModel.toggleGiftMode()
-                if viewModel.isGiftMode {
-                    showingGiftSelector = true
-                }
-            }
             
-            // Gift Info (when enabled)
             if viewModel.isGiftMode {
                 VStack(alignment: .leading, spacing: 8) {
                     if let recipient = viewModel.selectedGiftRecipient {
@@ -198,13 +151,13 @@ struct CartView: View {
                             Spacer()
                             
                             Button("change".localized()) {
-                                showingGiftSelector = true
+                                viewModel.showGiftSelector()
                             }
                             .font(.caption)
                         }
                     } else {
                         Button(action: {
-                            showingGiftSelector = true
+                            viewModel.showGiftSelector()
                         }) {
                             HStack {
                                 Image(systemName: "person.badge.plus")
@@ -230,6 +183,46 @@ struct CartView: View {
         .padding()
         .animation(.easeInOut, value: viewModel.isGiftMode)
     }
+    
+    private var cartBottomSection: some View {
+        VStack(spacing: 15) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(viewModel.itemCount == 1 ? "one_item".localized() : "multiple_items".localized(with: viewModel.itemCount))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("total".localized())
+                        .font(.headline)
+                }
+                
+                Spacer()
+                
+                Text(appState.formatPrice(viewModel.totalPrice))
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.blue)
+            }
+            .padding(.horizontal)
+            
+            Button(action: {
+                showingCheckout = true
+            }) {
+                HStack {
+                    Image(systemName: "creditcard.fill")
+                    Text("checkout".localized())
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+            .padding(.horizontal)
+        }
+        .padding(.vertical)
+        .background(Color(.systemBackground))
+        .shadow(color: .black.opacity(0.05), radius: 5, y: -2)
+    }
 }
-
-

@@ -2,18 +2,21 @@
 //  MockProductService.swift
 //  ShoppingStudy
 //
-//  Created by Mustafa Gülden on 21.09.2025.
+//  Created by Mustafa Gülden on 22.09.2025.
 //
 
-import XCTest
+import Foundation
 @testable import ShoppingStudy
 
 class MockProductService: ProductServiceProtocol {
     var mockProducts: [Product] = []
     var mockCategories: [String] = ["electronics", "clothing"]
     var shouldFail = false
+    var fetchProductsCalled = false
+    var fetchCategoriesCalled = false
     
     func fetchProducts(limit: Int?, sort: String?, category: String?) async throws -> [Product] {
+        fetchProductsCalled = true
         if shouldFail {
             throw NetworkError.requestFailed(NSError(domain: "Test", code: -1))
         }
@@ -28,6 +31,7 @@ class MockProductService: ProductServiceProtocol {
     }
     
     func fetchCategories() async throws -> [String] {
+        fetchCategoriesCalled = true
         if shouldFail {
             throw NetworkError.requestFailed(NSError(domain: "Test", code: -1))
         }

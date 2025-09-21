@@ -8,8 +8,6 @@
 import Foundation
 @testable import ShoppingStudy
 
-
-// Mock Objects
 class MockNetworkManager: NetworkManager {
     var shouldFail = false
     var mockResponse: Any?
