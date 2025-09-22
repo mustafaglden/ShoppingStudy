@@ -101,17 +101,6 @@ struct ProfileView: View {
                 GridItem(.flexible())
             ], spacing: 12) {
                 StatCard(
-                    title: "total_purchases".localized(),
-                    value: appState.formatPrice(
-                        viewModel.calculateTotalPurchases(
-                            localTotal: appState.totalAmountSpent
-                        )
-                    ),
-                    icon: "cart.fill",
-                    color: .blue
-                )
-                
-                StatCard(
                     title: "orders".localized(),
                     value: "\(viewModel.userCarts.count)",
                     icon: "doc.text.fill",

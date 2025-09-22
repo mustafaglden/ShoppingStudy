@@ -7,22 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "0ED3CDEE-7464-4590-B804-9354DDA024D1"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ShoppingStudy/ViewModels/ProfileViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "63"
-            endingLineNumber = "63"
-            landmarkName = "loadUserCarts(userId:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "3EA5EDE7-83F6-44AB-8A8E-3DF5458083CB"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -50,64 +34,6 @@
             endingLineNumber = "82"
             landmarkName = "processPayment(cartItems:isGift:giftRecipient:giftMessage:appState:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "D83F5AB1-09DD-4B4C-848C-540A60A4E3F3 - 6f8c72fd19bb8bdb"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for ShoppingStudy.CheckoutViewModel.processPayment(cartItems: Swift.Array&lt;ShoppingStudy.CartItem&gt;, isGift: Swift.Bool, giftRecipient: Swift.Optional&lt;ShoppingStudy.User&gt;, giftMessage: Swift.String, appState: ShoppingStudy.AppStateProtocol) async -&gt; Swift.Bool"
-                  moduleName = "ShoppingStudy.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mustafagulden/Desktop/HomeWorks/ShoppingStudy/ShoppingStudy/ViewModels/CheckoutViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "82"
-                  endingLineNumber = "82">
-               </Location>
-               <Location
-                  uuid = "D83F5AB1-09DD-4B4C-848C-540A60A4E3F3 - 40ff610426d443a0"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(12) suspend resume partial function for ShoppingStudy.CheckoutViewModel.processPayment(cartItems: Swift.Array&lt;ShoppingStudy.CartItem&gt;, isGift: Swift.Bool, giftRecipient: Swift.Optional&lt;ShoppingStudy.User&gt;, giftMessage: Swift.String, appState: ShoppingStudy.AppStateProtocol) async -&gt; Swift.Bool"
-                  moduleName = "ShoppingStudy.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mustafagulden/Desktop/HomeWorks/ShoppingStudy/ShoppingStudy/ViewModels/CheckoutViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "82"
-                  endingLineNumber = "82">
-               </Location>
-               <Location
-                  uuid = "D83F5AB1-09DD-4B4C-848C-540A60A4E3F3 - f36851fed8ab241f"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(13) suspend resume partial function for ShoppingStudy.CheckoutViewModel.processPayment(cartItems: Swift.Array&lt;ShoppingStudy.CartItem&gt;, isGift: Swift.Bool, giftRecipient: Swift.Optional&lt;ShoppingStudy.User&gt;, giftMessage: Swift.String, appState: ShoppingStudy.AppStateProtocol) async -&gt; Swift.Bool"
-                  moduleName = "ShoppingStudy.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mustafagulden/Desktop/HomeWorks/ShoppingStudy/ShoppingStudy/ViewModels/CheckoutViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "82"
-                  endingLineNumber = "82">
-               </Location>
-               <Location
-                  uuid = "D83F5AB1-09DD-4B4C-848C-540A60A4E3F3 - 717e32e512c3ccdf"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (ShoppingStudy.CartItem) -&gt; ShoppingStudy.GetCartsResponse.CartProduct in ShoppingStudy.CheckoutViewModel.processPayment(cartItems: Swift.Array&lt;ShoppingStudy.CartItem&gt;, isGift: Swift.Bool, giftRecipient: Swift.Optional&lt;ShoppingStudy.User&gt;, giftMessage: Swift.String, appState: ShoppingStudy.AppStateProtocol) async -&gt; Swift.Bool"
-                  moduleName = "ShoppingStudy.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mustafagulden/Desktop/HomeWorks/ShoppingStudy/ShoppingStudy/ViewModels/CheckoutViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "82"
-                  endingLineNumber = "82">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

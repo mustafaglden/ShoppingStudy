@@ -78,8 +78,6 @@ final class AppState: AppStateProtocol {
     }
     
     func loadCurrentUser() {
-        print("📱 Loading current user data...")
-        
         if let user = persistenceManager.getCurrentUser() {
             self.currentUser = user
             self.isAuthenticated = true
@@ -128,7 +126,6 @@ final class AppState: AppStateProtocol {
     }
     
     func updateFavorites() {
-        print("❤️ Updating favorites...")
         if let userId = currentUser?.id,
            let user = persistenceManager.getUser(by: userId) {
             self.currentUser = user
